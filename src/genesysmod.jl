@@ -155,7 +155,7 @@ function genesysmod(;elmod_daystep, elmod_hourstep, solver, DNLPsolver, year=201
         set_optimizer_attribute(model, "CPX_PARAM_LPMETHOD", 4)
         set_optimizer_attribute(model, "CPX_PARAM_SOLUTIONTYPE", 2)
         env = model.moi_backend.optimizer.model.env
-        CPXsetlogfilename(env, joinpath(resultdir,"Run_$(elmod_nthhour)_$(today()).log"), "w+")
+        #CPXsetlogfilename(env, joinpath(resultdir,"Run_$(elmod_nthhour)_$(today()).log"), "w+")
         #set_optimizer_attribute(model, "CPX_PARAM_BAROBJRNG", 1e+075)
     elseif string(solver) == "HiGHS.Optimizer"
         set_optimizer_attribute(model, "solver", "ipm")
