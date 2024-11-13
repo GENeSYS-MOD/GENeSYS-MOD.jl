@@ -176,6 +176,7 @@ function genesysmod(;elmod_daystep, elmod_hourstep, solver, DNLPsolver, year=201
     #
     # ####### Creating Result Files #############
     #
+    switch_iis = 1
     if occursin("INFEASIBLE",string(termination_status(model)))
         if switch_iis == 1
             println("Termination status:", termination_status(model), ". Computing IIS")
