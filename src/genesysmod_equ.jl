@@ -817,39 +817,36 @@ function genesysmod_equ(model,Sets,Params, Vars,Emp_Sets,Settings,Switch, Maps; 
   ################ Emissions Accounting ##############
 
   start=Dates.now()
-  for y ∈ 𝓨 for t ∈ 𝓣 for r ∈ 𝓡
+  
+  for y ∈ 𝓨, t ∈ 𝓣, r ∈ 𝓡
     if CanBuildTechnology[y,t,r] > 0
-      for e ∈ 𝓔 for m ∈ Maps.Tech_MO[t]
+      for e ∈ 𝓔, m ∈ Maps.Tech_MO[t]
         @constraint(model, Params.EmissionActivityRatio[r,t,m,e,y]*sum((Vars.TotalAnnualTechnologyActivityByMode[y,t,m,r]*Params.EmissionContentPerFuel[f,e]*Params.InputActivityRatio[r,t,f,m,y]) for f ∈ Maps.Tech_Fuel[t]) == Vars.AnnualTechnologyEmissionByMode[y,t,e,m,r] , base_name="E1_AnnualEmissionProductionByMode|$(y)|$(t)|$(e)|$(m)|$(r)" )
-      end end
+      end
     else
-      for m ∈ Maps.Tech_MO[t] for e ∈ 𝓔
+      for m ∈ Maps.Tech_MO[t], e ∈ 𝓔
         JuMP.fix(Vars.AnnualTechnologyEmissionByMode[y,t,e,m,r],0; force=true)
-      end end
+      end
     end
-  end end end
+    for e ∈ 𝓔
+      @constraint(model, sum(Vars.AnnualTechnologyEmissionByMode[y,t,e,m,r] for m ∈ Maps.Tech_MO[t]) == Vars.AnnualTechnologyEmission[y,t,e,r],
+      base_name="E2_AnnualEmissionProduction|$(y)|$(t)|$(e)|$(r)")
+    end
+  end
   print("Cstr: Em. Acc. 1 : ",Dates.now()-start,"\n")
   start=Dates.now()
-  for y ∈ 𝓨 for r ∈ 𝓡
-    for t ∈ 𝓣
-      for e ∈ 𝓔
-        @constraint(model, sum(Vars.AnnualTechnologyEmissionByMode[y,t,e,m,r] for m ∈ Maps.Tech_MO[t]) == Vars.AnnualTechnologyEmission[y,t,e,r],
-        base_name="E2_AnnualEmissionProduction|$(y)|$(t)|$(e)|$(r)")
 
+  if Switch.switch_emission_penalty == 1
+    for y ∈ 𝓨, t ∈ 𝓣, r ∈ 𝓡 
+      for e ∈ 𝓔 
         @constraint(model, (Vars.AnnualTechnologyEmission[y,t,e,r]*Params.EmissionsPenalty[r,e,y]*Params.EmissionsPenaltyTagTechnology[r,t,e,y])*YearlyDifferenceMultiplier(y,Sets) == Vars.AnnualTechnologyEmissionPenaltyByEmission[y,t,e,r],
         base_name="E3_EmissionsPenaltyByTechAndEmission|$(y)|$(t)|$(e)|$(r)")
       end
-
-      @constraint(model, sum(Vars.AnnualTechnologyEmissionPenaltyByEmission[y,t,e,r] for e ∈ 𝓔) == Vars.AnnualTechnologyEmissionsPenalty[y,t,r],
-      base_name="E4_EmissionsPenaltyByTechnology|$(y)|$(t)|$(r)")
-
-      @constraint(model, Vars.AnnualTechnologyEmissionsPenalty[y,t,r]/((1+Settings.SocialDiscountRate[r])^(y-Switch.StartYear+0.5)) == Vars.DiscountedTechnologyEmissionsPenalty[y,t,r],
+      @constraint(model, sum(Vars.AnnualTechnologyEmissionPenaltyByEmission[y,t,e,r] for e ∈ 𝓔)/((1+Settings.SocialDiscountRate[r])^(y-Switch.StartYear+0.5)) == Vars.DiscountedTechnologyEmissionsPenalty[y,t,r],
       base_name="E5_DiscountedEmissionsPenaltyByTechnology|$(y)|$(t)|$(r)")
     end
-  end end
-
-  for e ∈ 𝓔
-    for y ∈ 𝓨
+  else
+    for e ∈ 𝓔, y ∈ 𝓨
       for r ∈ 𝓡
         @constraint(model, sum(Vars.AnnualTechnologyEmission[y,t,e,r] for t ∈ 𝓣) == Vars.AnnualEmissions[y,e,r],
         base_name="E6_AnnualEmissionsAccounting|$(y)|$(e)|$(r)")
@@ -859,62 +856,63 @@ function genesysmod_equ(model,Sets,Params, Vars,Emp_Sets,Settings,Switch, Maps; 
       end
       @constraint(model, sum(Vars.AnnualEmissions[y,e,r]+Params.AnnualExogenousEmission[r,e,y] for r ∈ 𝓡) <= Params.AnnualEmissionLimit[e,y],
       base_name="E9_AnnualEmissionsLimit|$(y)|$(e)")
+      @constraint(model, sum(Vars.ModelPeriodEmissions[e,r] for r ∈ 𝓡) <= Params.ModelPeriodEmissionLimit[e],
+      base_name="E10_ModelPeriodEmissionsLimit|$(e)")      
     end
-    @constraint(model, sum(Vars.ModelPeriodEmissions[e,r] for r ∈ 𝓡) <= Params.ModelPeriodEmissionLimit[e],
-    base_name="E10_ModelPeriodEmissionsLimit|$(e)")
-  end
+    for e ∈ 𝓔, r ∈ 𝓡
+      if Params.RegionalModelPeriodEmissionLimit[e,r] < 999999
+        @constraint(model, Vars.ModelPeriodEmissions[e,r] <= Params.RegionalModelPeriodEmissionLimit[e,r] ,base_name="E11_RegionalModelPeriodEmissionsLimit|$(e)|$(r)" )
+      end
+    end
 
+    if Switch.switch_weighted_emissions == 1
+      for e ∈ 𝓔, r ∈ 𝓡
+        @constraint(model,
+        sum(Vars.WeightedAnnualEmissions[𝓨[i],e,r]*(𝓨[i+1]-𝓨[i]) for i ∈ eachindex(𝓨)[1:end-1] if 𝓨[i+1]-𝓨[i] > 0) +  Vars.WeightedAnnualEmissions[𝓨[end],e,r] == Vars.ModelPeriodEmissions[e,r]- Params.ModelPeriodExogenousEmission[r,e],
+        base_name="E7_ModelPeriodEmissionsAccounting|$(e)|$(r)")
+  
+        @constraint(model,
+        Vars.AnnualEmissions[𝓨[end],e,r] == Vars.WeightedAnnualEmissions[𝓨[end],e,r],
+        base_name="E7b_WeightedLastYearEmissions|$(𝓨[end])|$(e)|$(r)")
+        for i ∈ eachindex(𝓨)[1:end-1]
+          @constraint(model,
+          (Vars.AnnualEmissions[𝓨[i],e,r]+Vars.AnnualEmissions[𝓨[i+1],e,r])/2 == Vars.WeightedAnnualEmissions[𝓨[i],e,r],
+          base_name="E7a_WeightedEmissions|$(𝓨[i])|$(e)|$(r)")
+        end
+      end
+    else
+      for e ∈ 𝓔, r ∈ 𝓡
+        @constraint(model, sum( Vars.AnnualEmissions[𝓨[ind],e,r]*(𝓨[ind+1]-𝓨[ind]) for ind ∈ 1:(length(𝓨)-1) if 𝓨[ind+1]-𝓨[ind]>0)
+        +  Vars.AnnualEmissions[𝓨[end],e,r] == Vars.ModelPeriodEmissions[e,r]- Params.ModelPeriodExogenousEmission[r,e],
+        base_name="E7_ModelPeriodEmissionsAccounting|$(e)|$(r)")
+      end
+    end
+
+
+  end
   print("Cstr: Em. Acc. 2 : ",Dates.now()-start,"\n")
   start=Dates.now()
-  for e ∈ 𝓔 for r ∈ 𝓡
-    if Params.RegionalModelPeriodEmissionLimit[e,r] < 999999
-      @constraint(model, Vars.ModelPeriodEmissions[e,r] <= Params.RegionalModelPeriodEmissionLimit[e,r] ,base_name="E11_RegionalModelPeriodEmissionsLimit|$(e)|$(r)" )
-    end
-  end end
-  print("Cstr: Em. Acc. 3 : ",Dates.now()-start,"\n")
-  start=Dates.now()
-
-  if Switch.switch_weighted_emissions == 1
-    for e ∈ 𝓔 for r ∈ 𝓡
-      @constraint(model,
-      sum(Vars.WeightedAnnualEmissions[𝓨[i],e,r]*(𝓨[i+1]-𝓨[i]) for i ∈ eachindex(𝓨)[1:end-1] if 𝓨[i+1]-𝓨[i] > 0) +  Vars.WeightedAnnualEmissions[𝓨[end],e,r] == Vars.ModelPeriodEmissions[e,r]- Params.ModelPeriodExogenousEmission[r,e],
-      base_name="E7_ModelPeriodEmissionsAccounting|$(e)|$(r)")
-
-      @constraint(model,
-      Vars.AnnualEmissions[𝓨[end],e,r] == Vars.WeightedAnnualEmissions[𝓨[end],e,r],
-      base_name="E7b_WeightedLastYearEmissions|$(𝓨[end])|$(e)|$(r)")
-      for i ∈ eachindex(𝓨)[1:end-1]
-        @constraint(model,
-        (Vars.AnnualEmissions[𝓨[i],e,r]+Vars.AnnualEmissions[𝓨[i+1],e,r])/2 == Vars.WeightedAnnualEmissions[𝓨[i],e,r],
-        base_name="E7a_WeightedEmissions|$(𝓨[i])|$(e)|$(r)")
-      end
-    end end
-  else
-    for e ∈ 𝓔 for r ∈ 𝓡
-      @constraint(model, sum( Vars.AnnualEmissions[𝓨[ind],e,r]*(𝓨[ind+1]-𝓨[ind]) for ind ∈ 1:(length(𝓨)-1) if 𝓨[ind+1]-𝓨[ind]>0)
-      +  Vars.AnnualEmissions[𝓨[end],e,r] == Vars.ModelPeriodEmissions[e,r]- Params.ModelPeriodExogenousEmission[r,e],
-      base_name="E7_ModelPeriodEmissionsAccounting|$(e)|$(r)")
-    end end
-  end
-  print("Cstr: Em. Acc. 4 : ",Dates.now()-start,"\n")
 
   ################ Sectoral Emissions Accounting ##############
   start=Dates.now()
-  for y ∈ 𝓨, e ∈ 𝓔, se ∈ 𝓢𝓮
-#    if Params.AnnualSectoralEmissionLimit[e,se,y] < 999999
-      for r ∈ 𝓡
+  if Switch.switch_emission_penalty == 0
+    for y ∈ 𝓨, e ∈ 𝓔, se ∈ 𝓢𝓮
+      if Params.AnnualSectoralEmissionLimit[e,se,y] < 999999
+        for r ∈ 𝓡
+          @constraint(model,
+          sum(Vars.AnnualTechnologyEmission[y,t,e,r] for t ∈ 𝓣 if Params.Tags.TagTechnologyToSector[t,se] != 0) == Vars.AnnualSectoralEmissions[y,e,se,r],
+          base_name="E12_AnnualSectorEmissions|$(y)|$(e)|$(se)|$(r)")
+        end
+
         @constraint(model,
-        sum(Vars.AnnualTechnologyEmission[y,t,e,r] for t ∈ 𝓣 if Params.Tags.TagTechnologyToSector[t,se] != 0) == Vars.AnnualSectoralEmissions[y,e,se,r],
-        base_name="E12_AnnualSectorEmissions|$(y)|$(e)|$(se)|$(r)")
+        sum(Vars.AnnualSectoralEmissions[y,e,se,r] for r ∈ 𝓡 ) <= Params.AnnualSectoralEmissionLimit[e,se,y],
+        base_name="E13_AnnualSectorEmissionsLimit|$(y)|$(e)|$(se)")
+      else
+        JuMP.fix.(Vars.AnnualSectoralEmissions[y,e,se,:], 0; force=true)
       end
-
-      @constraint(model,
-      sum(Vars.AnnualSectoralEmissions[y,e,se,r] for r ∈ 𝓡 ) <= Params.AnnualSectoralEmissionLimit[e,se,y],
-      base_name="E13_AnnualSectorEmissionsLimit|$(y)|$(e)|$(se)")
-#    end
+    end
+    print("Cstr: ES: ",Dates.now()-start,"\n")
   end
-
-  print("Cstr: ES: ",Dates.now()-start,"\n")
   ######### Short-Term Storage Constraints #############
   start=Dates.now()
 

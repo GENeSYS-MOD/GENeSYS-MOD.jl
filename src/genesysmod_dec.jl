@@ -157,16 +157,23 @@ function genesysmod_dec(model,Sets, Params,Switch, Maps)
 
     AnnualTechnologyEmission = @variable(model, AnnualTechnologyEmission[𝓨,𝓣,𝓔,𝓡], container=DenseArray)
     AnnualTechnologyEmissionPenaltyByEmission = @variable(model, AnnualTechnologyEmissionPenaltyByEmission[𝓨,𝓣,𝓔,𝓡], container=DenseArray)
-    AnnualTechnologyEmissionsPenalty = @variable(model, AnnualTechnologyEmissionsPenalty[𝓨,𝓣,𝓡], container=DenseArray)
     DiscountedTechnologyEmissionsPenalty = @variable(model, DiscountedTechnologyEmissionsPenalty[𝓨,𝓣,𝓡], container=DenseArray)
-    AnnualEmissions = @variable(model, AnnualEmissions[𝓨,𝓔,𝓡], container=DenseArray)
-    ModelPeriodEmissions = @variable(model, ModelPeriodEmissions[𝓔,𝓡], container=DenseArray)
-    WeightedAnnualEmissions = @variable(model, WeightedAnnualEmissions[𝓨,𝓔,𝓡], container=DenseArray)
 
-
-    ######### SectoralEmissions #############
-
-    AnnualSectoralEmissions = @variable(model, AnnualSectoralEmissions[𝓨,𝓔,𝓢𝓮,𝓡], container=DenseArray)
+    if Switch.switch_emission_penalty == 0
+        AnnualSectoralEmissions = @variable(model, AnnualSectoralEmissions[𝓨,𝓔,𝓢𝓮,𝓡], container=JuMP.Containers.DenseAxisArray) 
+        AnnualEmissions = @variable(model, AnnualEmissions[𝓨,𝓔,𝓡], container=JuMP.Containers.DenseAxisArray) 
+        ModelPeriodEmissions = @variable(model, ModelPeriodEmissions[𝓔,𝓡], container=JuMP.Containers.DenseAxisArray)
+        if Switch.switch_weighted_emissions == 1 
+            WeightedAnnualEmissions = @variable(model, WeightedAnnualEmissions[𝓨,𝓔,𝓡], container=JuMP.Containers.DenseAxisArray)
+        else
+            WeightedAnnualEmissions = nothing
+        end
+    else
+        AnnualEmissions = nothing
+        AnnualSectoralEmissions = nothing
+        ModelPeriodEmissions = nothing
+        WeightedAnnualEmissions = nothing
+    end
 
 
 
@@ -276,7 +283,7 @@ function genesysmod_dec(model,Sets, Params,Switch, Maps)
     DiscountedSalvageValueStorage,TotalDiscountedStorageCost,TotalActivityInReserveMargin,
     DemandNeedingReserveMargin,TotalREProductionAnnual,RETotalDemandOfTargetFuelAnnual,
     TotalTechnologyModelPeriodActivity,RETargetMin,AnnualTechnologyEmissionByMode,
-    AnnualTechnologyEmission,AnnualTechnologyEmissionPenaltyByEmission,AnnualTechnologyEmissionsPenalty,
+    AnnualTechnologyEmission,AnnualTechnologyEmissionPenaltyByEmission,
     DiscountedTechnologyEmissionsPenalty,AnnualEmissions,ModelPeriodEmissions,WeightedAnnualEmissions,
     AnnualSectoralEmissions,Import,Export,NewTradeCapacity,TotalTradeCapacity,NewTradeCapacityCosts,
     DiscountedNewTradeCapacityCosts,NetTrade,NetTradeAnnual,AnnualTotalTradeCosts,

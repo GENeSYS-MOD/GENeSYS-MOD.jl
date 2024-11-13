@@ -440,13 +440,11 @@ struct Variables
     AnnualTechnologyEmissionByMode ::JuMP.Containers.DenseAxisArray
     AnnualTechnologyEmission ::JuMP.Containers.DenseAxisArray
     AnnualTechnologyEmissionPenaltyByEmission ::JuMP.Containers.DenseAxisArray
-    AnnualTechnologyEmissionsPenalty ::JuMP.Containers.DenseAxisArray
     DiscountedTechnologyEmissionsPenalty ::JuMP.Containers.DenseAxisArray
-    AnnualEmissions ::JuMP.Containers.DenseAxisArray
-    ModelPeriodEmissions ::JuMP.Containers.DenseAxisArray
-    WeightedAnnualEmissions ::JuMP.Containers.DenseAxisArray
-
-    AnnualSectoralEmissions ::JuMP.Containers.DenseAxisArray
+    AnnualEmissions 
+    ModelPeriodEmissions 
+    WeightedAnnualEmissions 
+    AnnualSectoralEmissions
 
     Import ::JuMP.Containers.DenseAxisArray
     Export ::JuMP.Containers.DenseAxisArray
@@ -760,6 +758,7 @@ additional metrics not part of the raw results.\n
 - **`extr_str_dispatch ::String`**  If switch_dispatch = 1, final name of the result file form the investment
 run that will be read to fix some decision variables.\n
  - **`switch_reserve ::Int16`** Used to enable reserve margin constraints\n
+ - **`switch_emission_penalty::Int16`**  Used to penalize emissions else emission cap is used\n
 """
 struct Switch <: InputClass
     StartYear :: Int16
@@ -809,6 +808,7 @@ struct Switch <: InputClass
     extr_str_results ::String
     extr_str_dispatch ::String
     switch_reserve ::Int16
+    switch_emission_penalty ::Int8
 end
 
 """
