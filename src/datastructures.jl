@@ -464,9 +464,9 @@ struct Variables
 
     RateOfTotalActivity ::Union{Nothing,JuMP.Containers.DenseAxisArray}
 
-    BaseYearSlack ::JuMP.Containers.DenseAxisArray
-    BaseYearBounds_TooLow ::JuMP.Containers.DenseAxisArray
-    BaseYearBounds_TooHigh ::JuMP.Containers.DenseAxisArray
+    BaseYearSlack 
+    BaseYearBounds_TooLow 
+    BaseYearBounds_TooHigh 
 
     DiscountedSalvageValueTransmission ::JuMP.Containers.DenseAxisArray
 
