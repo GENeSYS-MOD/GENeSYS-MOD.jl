@@ -156,22 +156,6 @@ function genesysmod_bounds(model,Sets,Params, Vars,Settings,Switch,Maps)
             Params.TotalTechnologyModelPeriodActivityUpperLimit[r,t] = 999999
     end end
 
-    #
-    # ####### Bounds for storage technologies #############
-    #
-
-
-    #
-    # ####### Capacity factor for heat technologies #############
-    #
-    # TO DO: ask konstantin for reason behind this and possibility to simplify
-    #CapacityFactor(r,Heat,l,y)$(sum(ll,CapacityFactor(r,Heat,ll,y)) = 0) = 1;
-    #Params.CapacityFactor[[x ∈ Subsets.Heat for x ∈ Params.CapacityFactor[!,:Technology]], :Value] .= 1
-
-    for r ∈ Sets.Region_full, l ∈ Sets.Timeslice, y ∈ Sets.Year, t ∈ intersect(Sets.Technology, ["HLI_Solar_Thermal", "HLR_Solar_Thermal", "RES_PV_Rooftop_Residential"])
-        Params.CapacityFactor[r,t,l,y] = Params.CapacityFactor[r,"RES_PV_Rooftop_Commercial",l,y]
-    end
-    #
     # ####### No new capacity construction in 2015 #############
     #
     if Switch.switch_dispatch == 0
