@@ -987,6 +987,15 @@ function genesysmod_equ(model,Sets,Params, Vars,Emp_Sets,Settings,Switch, Maps; 
     @constraint(model,
     Vars.DiscountedCapitalInvestmentStorage[s,𝓨[i],r]-Vars.DiscountedSalvageValueStorage[s,𝓨[i],r] == Vars.TotalDiscountedStorageCost[s,𝓨[i],r],
     base_name="SI5_TotalDiscountedCostByStorage|$(s)|$(𝓨[i])|$(r)")
+    if Params.StorageE2PRatio[s] > 0 && i > 1
+      @constraint(model,
+      sum(Vars.NewStorageCapacity[s,yy,r] for yy ∈ 𝓨 if Params.OperationalLifeStorage[s] >= (𝓨[i] - yy) && (𝓨[i] - yy) >= 0) + Params.ResidualStorageCapacity[r,s,𝓨[i]] 
+      <= Params.StorageE2PRatio[s] 
+      * Vars.TotalCapacityAnnual[𝓨[i],"$(replace(s, "S_" => "D_"))",r]
+      * 0.0036,
+      base_name="SI_E2P_Ratio|$(s)|$(𝓨[i])|$(r)"
+      )
+    end
   end end end
   for s ∈ 𝓢 for i ∈ eachindex(𝓨)
     for r ∈ 𝓡

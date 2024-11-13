@@ -354,8 +354,7 @@ function read_params(in_data, Sets, Switch, Tags)
     ModalSplitByFuelAndModalType = create_daa(in_data, "Par_ModalSplitByFuel", 𝓡, 𝓕, 𝓨, 𝓜𝓽)
 
 
-    StorageE2PRatio = nothing
-    #StorageE2PRatio = create_daa(in_data, "Par_StorageE2PRatio",dbr, 𝓢)
+    StorageE2PRatio = create_daa(in_data, "Par_StorageE2PRatio", 𝓢)
 
     RateOfDemand = DenseArray(zeros(length.([𝓨, 𝓛, 𝓕, 𝓡])...), 𝓨, 𝓛, 𝓕, 𝓡)
     Demand = DenseArray(zeros(length.([𝓨, 𝓛, 𝓕, 𝓡])...), 𝓨, 𝓛, 𝓕, 𝓡)
