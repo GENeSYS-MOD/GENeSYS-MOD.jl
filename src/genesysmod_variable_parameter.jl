@@ -37,6 +37,7 @@ function genesysmod_variable_parameter(model, Sets, Params, Vars)
     UseAnnual = JuMP.Containers.DenseAxisArray(zeros(length(Sets.Year), length(Sets.Fuel), length(Sets.Region_full)), Sets.Year, Sets.Fuel, Sets.Region_full)
     CurtailedEnergy = JuMP.Containers.DenseAxisArray(zeros(length(Sets.Year), length(Sets.Fuel), length(Sets.Region_full), length(Sets.Timeslice)), Sets.Year, Sets.Fuel, Sets.Region_full, Sets.Timeslice)
     ModelPeriodCostByRegion = JuMP.Containers.DenseAxisArray(zeros(length(Sets.Region_full)), Sets.Region_full)
+    TotalStorageCapacity = JuMP.Containers.DenseAxisArray(zeros(length(Sets.Storage), length(Sets.Year), length(Sets.Region_full)), Sets.Storage, Sets.Year, Sets.Region_full)
 
     LoopSetOutput = Dict()
     LoopSetInput = Dict()
@@ -45,7 +46,14 @@ function genesysmod_variable_parameter(model, Sets, Params, Vars)
       LoopSetInput[(r,f,y)] = [(x[1],x[2]) for x in keys(Params.InputActivityRatio[r,:,f,:,y]) if Params.InputActivityRatio[r,x[1],f,x[2],y] > 0]
     end end end
 
-    for y ∈ Sets.Year for r ∈ Sets.Region_full
+    for (i,y) ∈ enumerate(Sets.Year), r ∈ Sets.Region_full
+        for s ∈ Sets.Storage
+            if i == 1
+                TotalStorageCapacity[s,Sets.Year[i],r] = Params.ResidualStorageCapacity[r,s,Sets.Year[i]] + JuMP.value.(model[:NewStorageCapacity][s,Sets.Year[i],r]) 
+            else
+                TotalStorageCapacity[s,Sets.Year[i],r] = Params.ResidualStorageCapacity[r,s,Sets.Year[i]] + JuMP.value.(model[:NewStorageCapacity][s,Sets.Year[i-1],r]) + JuMP.value.(model[:NewStorageCapacity][s,Sets.Year[i],r]) 
+            end
+        end
         for l ∈ Sets.Timeslice
             for t ∈ Sets.Technology
                 RateOfTotalActivity[y,l,t,r] = sum(JuMP.value.(Vars.RateOfActivity[y,l,t,:,r]))
@@ -73,13 +81,13 @@ function genesysmod_variable_parameter(model, Sets, Params, Vars)
         ProductionAnnual[y,f,r] = sum(Production[y,:,f,r])
         UseAnnual[y,f,r] = sum(Use[y,:,f,r])
         end
-    end end
+    end
 
     for r ∈ Sets.Region_full
         ModelPeriodCostByRegion[r] = sum(JuMP.value.(Vars.TotalDiscountedCost[:,r]))
     end
 
     VarPar = Variable_Parameters(RateOfTotalActivity, RateOfProductionByTechnologyByMode, RateOfUseByTechnologyByMode, RateOfProductionByTechnology, RateOfUseByTechnology,
-    ProductionByTechnology, UseByTechnology, RateOfProduction, RateOfUse, Production, Use, ProductionAnnual, UseAnnual, CurtailedEnergy, ModelPeriodCostByRegion)
+    ProductionByTechnology, UseByTechnology, RateOfProduction, RateOfUse, Production, Use, ProductionAnnual, UseAnnual, CurtailedEnergy, ModelPeriodCostByRegion, TotalStorageCapacity)
     return VarPar
 end

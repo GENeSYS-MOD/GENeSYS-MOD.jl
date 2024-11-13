@@ -840,6 +840,7 @@ struct Variable_Parameters <: InputClass
     UseAnnual ::JuMP.Containers.DenseAxisArray
     CurtailedEnergy ::JuMP.Containers.DenseAxisArray
     ModelPeriodCostByRegion ::JuMP.Containers.DenseAxisArray
+    TotalStorageCapacity ::JuMP.Containers.DenseAxisArray
 end
 
 """
