@@ -736,18 +736,6 @@ function genesysmod_equ(model,Sets,Params, Vars,Emp_Sets,Settings,Switch, Maps; 
   end end end
   print("Cstr: Tot. Cap. : ",Dates.now()-start,"\n")
 
-  ############### New Capacity Constraints ##############
-
-  for y ∈ 𝓨 for t ∈ 𝓣 for r ∈ 𝓡
-    if Params.TotalAnnualMaxCapacityInvestment[r,t,y] < 999999
-      @constraint(model,
-      Vars.NewCapacity[y,t,r] <= Params.TotalAnnualMaxCapacityInvestment[r,t,y], base_name="NCC1_TotalAnnualMaxNewCapacityConstraint|$(y)|$(t)|$(r)")
-    end
-    if Params.TotalAnnualMinCapacityInvestment[r,t,y] > 0
-      @constraint(model,
-      Vars.NewCapacity[y,t,r] >= Params.TotalAnnualMinCapacityInvestment[r,t,y], base_name="NCC2_TotalAnnualMinNewCapacityConstraint|$(y)|$(t)|$(r)")
-    end
-  end end end
 
   ################ Annual Activity Constraints ##############
 

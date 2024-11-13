@@ -197,10 +197,6 @@ technologies in the start year. Used if switch_base_year_bounds is set to 1.\n
 - **`TagTechnologyToSector ::JuMP.Containers.DenseAxisArray`** Links technologies to sectors. \n
 - **`AnnualSectoralEmissionLimit ::JuMP.Containers.DenseAxisArray`** Annual upper limit for
     a specific emission generated in a certain sector for the whole modelled region.\n
-- **`TotalAnnualMaxCapacityInvestment ::JuMP.Containers.DenseAxisArray`** Maximum capacity of
-    a technology, expressed in power units.\n
-- **`TotalAnnualMinCapacityInvestment ::JuMP.Containers.DenseAxisArray`** Minimum capacity of
-    a technology, expressed in power units.\n
 - **`TotalTechnologyAnnualActivityUpperLimit ::JuMP.Containers.DenseAxisArray`** Total maximum
     level of activity allowed for a technology in one year.\n
 - **`TotalTechnologyAnnualActivityLowerLimit ::JuMP.Containers.DenseAxisArray`** Total minimum
@@ -333,9 +329,6 @@ struct Parameters <: InputClass
     TotalAnnualMinCapacity ::JuMP.Containers.DenseAxisArray
 
     AnnualSectoralEmissionLimit ::JuMP.Containers.DenseAxisArray
-
-    TotalAnnualMaxCapacityInvestment ::JuMP.Containers.DenseAxisArray
-    TotalAnnualMinCapacityInvestment ::JuMP.Containers.DenseAxisArray
 
     TotalTechnologyAnnualActivityUpperLimit ::JuMP.Containers.DenseAxisArray
     TotalTechnologyAnnualActivityLowerLimit ::JuMP.Containers.DenseAxisArray

@@ -359,8 +359,6 @@ function read_params(in_data, Sets, Switch, Tags)
     RateOfDemand = DenseArray(zeros(length.([𝓨, 𝓛, 𝓕, 𝓡])...), 𝓨, 𝓛, 𝓕, 𝓡)
     Demand = DenseArray(zeros(length.([𝓨, 𝓛, 𝓕, 𝓡])...), 𝓨, 𝓛, 𝓕, 𝓡)
     StorageMaxCapacity = DenseArray(zeros(length.([𝓡, 𝓢, 𝓨])...), 𝓡, 𝓢, 𝓨)
-    TotalAnnualMaxCapacityInvestment = DenseArray(fill(999999, length.([𝓡, 𝓣, 𝓨])...), 𝓡, 𝓣, 𝓨)
-    TotalAnnualMinCapacityInvestment = DenseArray(zeros(length.([𝓡, 𝓣, 𝓨])...), 𝓡, 𝓣, 𝓨)
     TotalTechnologyModelPeriodActivityLowerLimit = DenseArray(zeros(length.([𝓡, 𝓣])...), 𝓡, 𝓣)
 
     REMinProductionTarget = DenseArray(zeros(length.([𝓡, 𝓕, 𝓨])...), 𝓡, 𝓕, 𝓨)
@@ -444,8 +442,7 @@ function read_params(in_data, Sets, Switch, Tags)
     StorageLevelStart,MinStorageCharge,
     OperationalLifeStorage,CapitalCostStorage,ResidualStorageCapacity,TechnologyToStorage,
     TechnologyFromStorage,StorageMaxCapacity,TotalAnnualMaxCapacity,TotalAnnualMinCapacity,
-    AnnualSectoralEmissionLimit,TotalAnnualMaxCapacityInvestment,
-    TotalAnnualMinCapacityInvestment,TotalTechnologyAnnualActivityUpperLimit,
+    AnnualSectoralEmissionLimit,TotalTechnologyAnnualActivityUpperLimit,
     TotalTechnologyAnnualActivityLowerLimit, TotalTechnologyModelPeriodActivityUpperLimit,
     TotalTechnologyModelPeriodActivityLowerLimit,ReserveMarginTagTechnology,
     ReserveMarginTagFuel,ReserveMargin,REMinProductionTarget,
@@ -560,8 +557,6 @@ function get_aggregate_params(Params_Full, Sets, Sets_full)
     RateOfDemand = Params_Full.RateOfDemand[𝓨,:,:,𝓡]
     Demand = Params_Full.Demand[𝓨,:,:,𝓡]
     StorageMaxCapacity = Params_Full.StorageMaxCapacity[𝓡,:,𝓨]
-    TotalAnnualMaxCapacityInvestment = Params_Full.TotalAnnualMaxCapacityInvestment[𝓡,:,𝓨]
-    TotalAnnualMinCapacityInvestment = Params_Full.TotalAnnualMinCapacityInvestment[𝓡,:,𝓨]
     TotalTechnologyModelPeriodActivityLowerLimit = Params_Full.TotalTechnologyModelPeriodActivityLowerLimit[𝓡,:]
 
     REMinProductionTarget = Params_Full.REMinProductionTarget[𝓡,:,𝓨]
@@ -609,8 +604,7 @@ function get_aggregate_params(Params_Full, Sets, Sets_full)
     StorageLevelStart,MinStorageCharge,
     OperationalLifeStorage,CapitalCostStorage,ResidualStorageCapacity,TechnologyToStorage,
     TechnologyFromStorage,StorageMaxCapacity,TotalAnnualMaxCapacity,TotalAnnualMinCapacity,
-    AnnualSectoralEmissionLimit,TotalAnnualMaxCapacityInvestment,
-    TotalAnnualMinCapacityInvestment,TotalTechnologyAnnualActivityUpperLimit,
+    AnnualSectoralEmissionLimit,TotalTechnologyAnnualActivityUpperLimit,
     TotalTechnologyAnnualActivityLowerLimit, TotalTechnologyModelPeriodActivityUpperLimit,
     TotalTechnologyModelPeriodActivityLowerLimit,ReserveMarginTagTechnology,
     ReserveMarginTagFuel,ReserveMargin,REMinProductionTarget,
