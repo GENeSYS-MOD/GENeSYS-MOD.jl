@@ -180,20 +180,22 @@ function genesysmod_dec(model,Sets, Params,Switch, Maps)
     ######### Trade #############
     Import = def_daa(𝓨,𝓛,𝓕,𝓡,𝓡)
     Export = def_daa(𝓨,𝓛,𝓕,𝓡,𝓡)
-    NewTradeCapacity = def_daa(𝓨,𝓕,𝓡,𝓡)
-    TotalTradeCapacity = def_daa(𝓨,𝓕,𝓡,𝓡)
-    NewTradeCapacityCosts = def_daa(𝓨,𝓕,𝓡,𝓡)
-    DiscountedNewTradeCapacityCosts = def_daa(𝓨,𝓕,𝓡,𝓡)
+    NewTradeCapacity = def_daa(𝓨,Params.Tags.TagFuelToSubsets["TradeInv"],𝓡,𝓡)
+    TotalTradeCapacity = def_daa(𝓨,Params.Tags.TagFuelToSubsets["TradeInv"],𝓡,𝓡)
+    NewTradeCapacityCosts = def_daa(𝓨,Params.Tags.TagFuelToSubsets["TradeInv"],𝓡,𝓡)
+    DiscountedNewTradeCapacityCosts = def_daa(𝓨,Params.Tags.TagFuelToSubsets["TradeInv"],𝓡,𝓡)
     for y ∈ 𝓨 for f ∈ 𝓕 for r1 ∈ 𝓡 for r2 ∈ 𝓡
         if Params.TradeRoute[r1,r2,f,y] != 0
             for l ∈ 𝓛
                 Import[y,l,f,r1,r2] = @variable(model, lower_bound= 0, base_name="Import[$y,$l,$f,$r1,$r2]")
                 Export[y,l,f,r1,r2] = @variable(model, lower_bound= 0, base_name="Export[$y,$l,$f,$r1,$r2]")
             end
-            NewTradeCapacity[y,f,r1,r2] = @variable(model, lower_bound= 0, base_name="NewTradeCapacity[$y,$f,$r1,$r2]")
-            TotalTradeCapacity[y,f,r1,r2] = @variable(model, lower_bound= 0, base_name="TotalTradeCapacity[$y,$f,$r1,$r2]")
-            NewTradeCapacityCosts[y,f,r1,r2] = @variable(model, lower_bound= 0, base_name="NewTradeCapacityCosts[$y,$f,$r1,$r2]")
-            DiscountedNewTradeCapacityCosts[y,f,r1,r2] = @variable(model, lower_bound= 0, base_name="DiscountedNewTradeCapacityCosts[$y,$f,$r1,$r2]")
+            if f ∈ Params.Tags.TagFuelToSubsets["TradeInv"]
+                TotalTradeCapacity[y,f,r1,r2] = @variable(model, lower_bound= 0, base_name="TotalTradeCapacity[$y,$f,$r1,$r2]")
+                NewTradeCapacity[y,f,r1,r2] = @variable(model, lower_bound= 0, base_name="NewTradeCapacity[$y,$f,$r1,$r2]")
+                NewTradeCapacityCosts[y,f,r1,r2] = @variable(model, lower_bound= 0, base_name="NewTradeCapacityCosts[$y,$f,$r1,$r2]")
+                DiscountedNewTradeCapacityCosts[y,f,r1,r2] = @variable(model, lower_bound= 0, base_name="DiscountedNewTradeCapacityCosts[$y,$f,$r1,$r2]")
+            end
         end
     end end end end
     model[:Import] = Import
