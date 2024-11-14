@@ -429,10 +429,9 @@ function genesysmod_equ(model,Sets,Params, Vars,Emp_Sets,Settings,Switch, Maps; 
         @constraint(model, Vars.NewTradeCapacity[𝓨[i],f,r,rr]*Params.TradeCapacityGrowthCosts[r,rr,f]*Params.TradeRoute[r,rr,f,𝓨[i]] == Vars.NewTradeCapacityCosts[𝓨[i],f,r,rr], base_name="TrC4_NewTradeCapacityCosts|$(𝓨[i])|$(f)|$(r)|$(rr)")
         @constraint(model, Vars.NewTradeCapacityCosts[𝓨[i],f,r,rr]/((1+Settings.GeneralDiscountRate[r])^(𝓨[i]-Switch.StartYear+0.5)) == Vars.DiscountedNewTradeCapacityCosts[𝓨[i],f,r,rr], base_name="TrC5_DiscountedNewTradeCapacityCosts|$(𝓨[i])|$(f)|$(r)|$(rr)")
       end
-    end
-    elseif Params.TradeRoute[r,rr,f,𝓨[i]] == 0 || Params.TradeCapacityGrowthCosts[r,rr,f] == 0
-      JuMP.fix(Vars.DiscountedNewTradeCapacityCosts[𝓨[i],f,r,rr],0; force=true)
-      JuMP.fix(Vars.NewTradeCapacity[𝓨[i],f,r,rr],0; force=true)
+    #elseif Params.TradeRoute[r,rr,f,𝓨[i]] == 0 || Params.TradeCapacityGrowthCosts[r,rr,f] == 0
+    #  JuMP.fix(Vars.DiscountedNewTradeCapacityCosts[𝓨[i],f,r,rr],0; force=true)
+    # JuMP.fix(Vars.NewTradeCapacity[𝓨[i],f,r,rr],0; force=true)
     end
 
     if Switch.switch_dispatch isa NoDispatch
